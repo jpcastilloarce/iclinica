@@ -114,7 +114,7 @@ export default function BasicInfo() {
           className="justify-center items-center bg-black h-12 rounded-lg "
           onPress={() => {
             if (country === "" || age === "") {
-              alert("Por favor llene todos los campos");
+              alert("Por favor complete el campo País y Edad");
               return;
             }
             router.push("/screens/ReasonInfo");
