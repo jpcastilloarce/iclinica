@@ -64,8 +64,10 @@ export default function AditionalInfo() {
             className="justify-center items-center bg-black h-12 rounded-lg "
             onPress={() => {
               setIsLoading(true);
+              console.log(JSON.stringify(formPaciente));
               getResult(formPaciente.doctor, formPaciente.patientForm).then(
                 (result) => {
+                  console.log(result);
                   formPaciente.patientForm.results = result;
                   setIsLoading(false);
                   router.push("/screens/ResultInfo");

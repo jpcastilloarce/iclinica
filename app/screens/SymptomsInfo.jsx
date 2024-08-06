@@ -12,7 +12,6 @@ import { Screen } from "../../components/Screen";
 import PatientContext from "../../contexts/PatientContext";
 import { getQuestions } from "../../lib/iclinicaApi";
 import { useRouter } from "expo-router";
-import Body from "react-native-body-highlighter";
 import Slider from "@react-native-community/slider";
 
 export default function SymptomsInfo() {
@@ -25,7 +24,6 @@ export default function SymptomsInfo() {
   const formPaciente = useContext(PatientContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isBackSideEnabled, setIsBackSideEnabled] = useState(false);
-  const [bodyPartSelected, setBodyPartSelected] = useState({});
   const toggleSwitch = () =>
     setIsBackSideEnabled((previousState) => !previousState);
 
@@ -83,6 +81,19 @@ export default function SymptomsInfo() {
     formPaciente.patientForm.symptoms = updatedSymptoms;
     setIsVisible(false);
   };
+
+  const data = [
+    { name: 'Bench Press', muscles: ['chest', 'triceps', 'front-deltoids'] },
+    { name: 'Push Ups', muscles: ['chest'] },
+  ];
+  
+  const handleMuscleClick = React.useCallback(({ muscle, data }) => {
+    const { exercises, frequency } = data;
+
+    alert(`You clicked the ${muscle}! You've worked out this muscle ${frequency} times through the following exercises: ${JSON.stringify(exercises)}`)
+
+  }, [data]);
+
   return (
     <Screen>
       <ScrollView className="h-full">
@@ -137,40 +148,15 @@ export default function SymptomsInfo() {
           </View>
         )}
         {!isLoading && isVisible && (
-          <ScrollView className="-mt-28">
+          <ScrollView className="-mt-3.5">
             <View className="bg-gray-50 border border-gray-300 p-4 items-center">
-              <View className="w-1/4 absolute right-8 scale-150 mt-4 z-10">
-                <Switch
-                  onValueChange={toggleSwitch}
-                  value={isBackSideEnabled}
-                  thumbColor="#000"
-                />
-              </View>
-              <Text className="text-base font-bold -mr-8 absolute mt-16 right-12">
-                ({isBackSideEnabled ? "Frontal" : "De espalda"})
-              </Text>
-              <Body
-                data={[bodyPartSelected]}
-                gender={
-                  formPaciente.patientForm.patientInfo.gender === "Masculino"
-                    ? "male"
-                    : "female"
-                }
-                onBodyPartPress={(e) => {
-                  setLocation(bodyPartTranslations[e.slug]);
-                  setBodyPartSelected({ slug: e.slug, intensity: 2 });
-                }}
-                side={isBackSideEnabled ? "back" : "front"}
-                scale={1.3}
-              />
               <Text className="text-lg mb-3">
-                Ubicación del síntoma (seleccione)
+                Ubicación del dolor o malestar
               </Text>
               <TextInput
                 className="border border-gray-300 rounded-lg p-1 mb-8 w-full pl-4 text-black"
                 value={location}
                 placeholder="¿Dónde duele? (cabeza, estómago, garganta)"
-                readOnly
                 onChangeText={setLocation}
               />
               <Text className="text-lg mb-3">Descripción del síntoma</Text>
