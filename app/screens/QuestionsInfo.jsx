@@ -86,7 +86,7 @@ export default function QuestionsInfo() {
           text="Preguntas Adicionales"
           subtext="Estas preguntas son en base a los síntomas que ha presentado"
         />
-        {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
+        {isLoading && <ActivityIndicator size="large" color="black" />}
         {!isLoading && (
           <View>
             <Text className="text-xl font-semibold justify-center items-center text-center mb-10 mt-4">

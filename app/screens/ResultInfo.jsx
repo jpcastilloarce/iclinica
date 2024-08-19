@@ -64,37 +64,41 @@ export default function ResultInfo() {
   return (
     <Screen>
       <Title text="Resultado" subtext="Esto no reemplaza una consulta médica" />
-      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-      <ScrollView className="border border-gray-300 rounded-lg pr-4">
-        <TextInput
-          className="mb-8 w-full pl-4 text-black text-justify"
-          value={result}
-          multiline
-          readOnly
-          numberOfLines={3}
-        ></TextInput>
-      </ScrollView>
-      <View className="flex-row mt-4">
-        <View className="w-5/12">
-          <Button
-            label={"Copiar Texto"}
-            onPress={() => {
-              Clipboard.setStringAsync(result);
-              Alert.alert("Resultado médico", "El texto ha sido copiado");
-            }}
-            isPrimary
-          />
-        </View>
-        <View className="w-5/12 ml-auto">
-          <Button
-            label={"Finalizar"}
-            onPress={() => {
-              router.push("/");
-            }}
-            isPrimary
-          />
-        </View>
-      </View>
+      {isLoading && <ActivityIndicator size="large" color="black" />}
+      {!isLoading && (
+        <>
+          <ScrollView className="border border-gray-300 rounded-lg pr-4">
+            <TextInput
+              className="mb-8 w-full pl-4 text-black text-justify"
+              value={result}
+              multiline
+              readOnly
+              numberOfLines={2}
+            ></TextInput>
+          </ScrollView>
+          <View className="flex-row mt-4">
+            <View className="w-5/12">
+              <Button
+                label={"Copiar Texto"}
+                onPress={() => {
+                  Clipboard.setStringAsync(result);
+                  Alert.alert("Resultado médico", "El texto ha sido copiado");
+                }}
+                isPrimary
+              />
+            </View>
+            <View className="w-5/12 ml-auto">
+              <Button
+                label={"Finalizar"}
+                onPress={() => {
+                  router.push("/");
+                }}
+                isPrimary
+              />
+            </View>
+          </View>
+        </>
+      )}
     </Screen>
   );
 }
