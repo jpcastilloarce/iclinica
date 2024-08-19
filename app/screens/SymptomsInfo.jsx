@@ -1,68 +1,30 @@
-import React, { useState, useContext, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TextInput,
-  ActivityIndicator,
-  Switch,
-} from "react-native";
+import React, { useState, useContext, useEffect, useCallback } from "react";
+import { View, Text, ScrollView } from "react-native";
 import { Screen } from "../../components/Screen";
-import PatientContext from "../../contexts/PatientContext";
-import { getQuestions } from "../../lib/iclinicaApi";
 import { useRouter } from "expo-router";
-import Slider from "@react-native-community/slider";
+import NavigationButtons from "../../components/NavigationButtons";
+import Button from "../../components/Button";
+import Title from "../../components/Title";
+import SymptomCard from "../../components/SymptomCard";
+import FormTextInput from "../../components/FormTextInput";
+import FormSliderInput from "../../components/FormSliderInput";
+import SynptomsContext from "../../contexts/SymptomsContext";
 
 export default function SymptomsInfo() {
+  const symptomContext = useContext(SynptomsContext);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
   const [intensity, setIntensity] = useState(1);
-  const [isVisible, setIsVisible] = useState(false);
+  const [showNavButtons, setShowNavButtons] = useState(true);
   const [localSymptoms, setLocalSymptoms] = useState([]);
-  const formPaciente = useContext(PatientContext);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isBackSideEnabled, setIsBackSideEnabled] = useState(false);
-  const toggleSwitch = () =>
-    setIsBackSideEnabled((previousState) => !previousState);
-
-  const bodyPartTranslations = {
-    trapezius: "Trapecio",
-    triceps: "Tríceps",
-    forearm: "Antebrazo",
-    obliques: "Oblicuos",
-    adductors: "Aductores",
-    calves: "Gemelos",
-    head: "Cabeza",
-    hair: "Pelo",
-    neck: "Cuello",
-    chest: "Pecho",
-    biceps: "Bíceps",
-    abs: "Abdomen",
-    "upper-back": "Espalda Alta",
-    "lower-back": "Espalda Baja",
-    hamstring: "Isquiotibiales",
-    gluteal: "Glúteos",
-    deltoids: "Deltoides",
-    hands: "Manos",
-    feet: "Pies",
-    ankles: "Tobillos",
-    tibialis: "Tibial",
-    adductor: "Aductor",
-    "front-deltoids": "Deltoides Frontales",
-    abductors: "Abductores",
-    "back-deltoids": "Deltoides Posteriores",
-    quadriceps: "Cuádriceps",
-    knees: "Rodillas",
-  };
 
   const router = useRouter();
   useEffect(() => {
-    setLocalSymptoms(formPaciente.patientForm.symptoms || []);
-  }, [formPaciente.patientForm.symptoms]);
+    setLocalSymptoms(symptomContext.symptoms || []);
+  }, [symptomContext.symptoms]);
 
-  const handleClick = () => {
+  const addSymnptom = () => {
     const newSymptom = {
       location,
       description,
@@ -71,175 +33,122 @@ export default function SymptomsInfo() {
     };
     const updatedSymptoms = [...localSymptoms, newSymptom];
     setLocalSymptoms(updatedSymptoms);
-    formPaciente.patientForm.symptoms = updatedSymptoms;
-    setIsVisible(false);
+    symptomContext.symptoms = updatedSymptoms;
+    setShowNavButtons(true);
   };
 
-  const deleteSymptom = (index) => {
+  const removeSymptom = (index) => {
     const updatedSymptoms = localSymptoms.filter((_, i) => i !== index);
     setLocalSymptoms(updatedSymptoms);
-    formPaciente.patientForm.symptoms = updatedSymptoms;
-    setIsVisible(false);
+    symptomContext.symptoms = updatedSymptoms;
+    setShowNavButtons(true);
   };
+  const handleContinuePress = useCallback(() => {
+    if (localSymptoms.length === 0) {
+      alert("Por favor ingrese al menos un síntoma");
+      return;
+    }
+    router.push("/screens/QuestionsInfo");
+  }, [localSymptoms.length, router]);
 
-  const data = [
-    { name: 'Bench Press', muscles: ['chest', 'triceps', 'front-deltoids'] },
-    { name: 'Push Ups', muscles: ['chest'] },
-  ];
-  
-  const handleMuscleClick = React.useCallback(({ muscle, data }) => {
-    const { exercises, frequency } = data;
-
-    alert(`You clicked the ${muscle}! You've worked out this muscle ${frequency} times through the following exercises: ${JSON.stringify(exercises)}`)
-
-  }, [data]);
+  const handleBackPress = () => {
+    router.push("/screens/RiskInfo");
+  };
 
   return (
     <Screen>
-      <ScrollView className="h-full">
-        <Text className="text-2xl font-bold mb-1">Síntomas específicos</Text>
-        <Text className="text-sm text-gray-400 mb-8">
-          Si quiere un diagnóstico más preciso, por favor ingrese todos los
-          síntomas
-        </Text>
-        {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-        {!isLoading && !isVisible && (
-          <View className="h-auto flex-1">
-            <Pressable
-              className="justify-center items-center w-4/12 bg-black h-12 rounded-lg"
-              onPress={() => setIsVisible(true)}
-            >
-              <Text className="text-white text-l font-semibold">+ Agregar</Text>
-            </Pressable>
-            <Pressable
-              className="justify-center items-center w-4/12 bg-black h-12 rounded-lg ml-36 -mt-12 mb-6"
-              onPress={() => deleteSymptom(localSymptoms.length - 1)}
-            >
-              <Text className="text-white text-l font-semibold">
-                - Eliminar último
-              </Text>
-            </Pressable>
-            {localSymptoms.length > 0 ? (
-              localSymptoms.map((symptom, index) => (
-                <View
-                  key={index}
-                  className={`items-center mb-4 border rounded-lg p-4 border-gray-500 bg-gray-100-500 h-auto"`}
-                >
-                  <View className="w-11/12 h-auto">
-                    <Text className={`pl-2 text-l text-black flex-wrap`}>
-                      Ubicación: {symptom.location}
-                    </Text>
-                    <Text className={`pl-2 text-l text-black flex-wrap`}>
-                      Intensidad: {symptom.intensity}
-                    </Text>
-                    <Text
-                      className={`w-full pl-2 text-sm text-black text-justify h-auto`}
-                    >
-                      Descripción: {symptom.description}
-                    </Text>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <Text className="h-10 w-full block">
-                No ha agregado síntomas aún.
-              </Text>
-            )}
-          </View>
-        )}
-        {!isLoading && isVisible && (
-          <ScrollView className="-mt-3.5">
-            <View className="bg-gray-50 border border-gray-300 p-4 items-center">
-              <Text className="text-lg mb-3">
-                Ubicación del dolor o malestar
-              </Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg p-1 mb-8 w-full pl-4 text-black"
-                value={location}
-                placeholder="¿Dónde duele? (cabeza, estómago, garganta)"
-                onChangeText={setLocation}
-              />
-              <Text className="text-lg mb-3">Descripción del síntoma</Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg p-1 mb-8 w-full pl-4"
-                value={description}
-                multiline
-                numberOfLines={1}
-                placeholder="¿Cómo es el dolor? (agudo, sordo, punzante)"
-                onChangeText={setDescription}
-              />
-              <Text className="text-lg mb-3">Duración del síntoma</Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg p-1 mb-8 w-full pl-4"
-                value={duration}
-                multiline
-                placeholder="¿Cuánto tiempo lleva con este síntoma?"
-                numberOfLines={1}
-                onChangeText={setDuration}
-              />
-              <Text className="text-lg mb-3">
-                Intensidad del síntoma (1/10)
-              </Text>
-              <View className="flex-row">
-                <Text className="border border-gray-300 text-lg rounded-lg p-2 mb-2 w-1/5 pl-4">
-                  {intensity}
-                </Text>
-                <Slider
-                  style={{ width: "60%", height: 50 }}
-                  minimumValue={0}
-                  step={1}
-                  maximumValue={10}
-                  minimumTrackTintColor="#CCC"
-                  maximumTrackTintColor="black"
-                  thumbTintColor="black"
-                  onValueChange={setIntensity}
-                  value={intensity} // Inicializar slider con el valor actual de `age`
+      <ScrollView>
+        <Title
+          text={"Sintomas Específicos"}
+          subtext={
+            "Si quiere un diagnóstico más preciso, por favor ingrese todos los síntomas"
+          }
+        />
+
+        {showNavButtons && (
+          <View>
+            <View className="flex-row">
+              <View className="w-4/12">
+                <Button
+                  onPress={() => setShowNavButtons(false)}
+                  label="+ Agregar"
+                  isPrimary
                 />
               </View>
+              <View className="w-4/12 ml-4">
+                <Button
+                  onPress={() => removeSymptom(localSymptoms.length - 1)}
+                  label="- Eliminar"
+                  isPrimary
+                />
+              </View>
+            </View>
+
+            <View className="mt-4">
+              {localSymptoms.length > 0 ? (
+                localSymptoms.map((symptom, index) => (
+                  <SymptomCard key={index} index={index} symptom={symptom} />
+                ))
+              ) : (
+                <Text className="h-10 w-full block">
+                  No ha agregado síntomas aún.
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
+        {!showNavButtons && (
+          <ScrollView className="-mt-3.5">
+            <View className="bg-gray-50 border border-gray-300 p-4">
+              <FormTextInput
+                label="Ubicación del dolor o malestar"
+                value={location}
+                placeholder={"¿Dónde duele? (cabeza, estómago, garganta)"}
+                onChangeText={setLocation}
+              />
+              <FormTextInput
+                label="Descripción del síntoma"
+                value={description}
+                placeholder={"¿Cómo es el dolor? (agudo, sordo, punzante)"}
+                onChangeText={setDescription}
+              />
+              <FormTextInput
+                label="Duración del síntoma"
+                value={duration}
+                placeholder={"¿Cuánto tiempo lleva con este síntoma?"}
+                onChangeText={setDuration}
+              />
+              <FormSliderInput
+                label="Intensidad del síntoma (1/10)"
+                value={intensity}
+                onValueChange={setIntensity}
+                min={1}
+                max={10}
+                step={1}
+              />
               <View className="flex-row mt-10">
-                <Pressable
-                  className="justify-center items-center w-4/12 bg-black h-12 rounded-lg"
-                  onPress={handleClick}
-                >
-                  <Text className="text-white text-l font-semibold">
-                    Agregar
-                  </Text>
-                </Pressable>
-                <Pressable
-                  className="justify-center items-center w-4/12  h-12 rounded-lg ml-6"
-                  onPress={() => setIsVisible(false)}
-                >
-                  <Text className="text-black text-l font-semibold">
-                    Cancelar
-                  </Text>
-                </Pressable>
+                <View className="w-3/5 ml-auto">
+                  <Button
+                    onPress={() => setShowNavButtons(true)}
+                    label="Cancelar"
+                    isPrimary={false}
+                  />
+                </View>
+                <View className="w-2/6">
+                  <Button onPress={addSymnptom} label="Agregar" isPrimary />
+                </View>
               </View>
             </View>
           </ScrollView>
         )}
       </ScrollView>
-      {!isLoading && !isVisible && (
-        <View className="w-64 ml-auto mt-2">
-          <Pressable
-            className="justify-center items-center bg-black h-12 rounded-lg "
-            onPress={() => {
-              if (localSymptoms.length === 0) {
-                alert("Por favor ingrese al menos un síntoma");
-                return;
-              }
-              setIsLoading(true);
-              getQuestions(formPaciente.doctor, formPaciente.patientForm).then(
-                (questions) => {
-                  formPaciente.patientForm.aditionalQuestions = questions;
-                  router.push("/screens/Questions");
-                  setIsLoading(false);
-                },
-              );
-            }}
-          >
-            <Text className="text-white text-lg font-semibold">Continuar</Text>
-          </Pressable>
-        </View>
+
+      {showNavButtons && (
+        <NavigationButtons
+          onBackPress={handleBackPress}
+          onContinuePress={handleContinuePress}
+        />
       )}
     </Screen>
   );

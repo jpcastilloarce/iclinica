@@ -1,33 +1,41 @@
 import React, { useState, useContext, useEffect } from "react";
-import { View, Text, TextInput, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Screen } from "../../components/Screen";
 import { useRouter } from "expo-router";
-import PatientContext from "../../contexts/PatientContext";
+import RadioButton from "../../components/RadioButton";
+import NavigationButtons from "../../components/NavigationButtons";
+import Title from "../../components/Title";
+import BasicInfoContext from "../../contexts/BasicInfoContext";
+import FormTextInput from "../../components/FormTextInput";
 
 export default function BasicInfo() {
   const router = useRouter();
-  const { patientForm } = useContext(PatientContext) || {};
+  const basicInfoContext = useContext(BasicInfoContext);
   const [country, setCountry] = useState("");
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState("Masculino");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
 
   useEffect(() => {
-    setGender("Masculino");
-    if (patientForm && patientForm.patientInfo) {
-      const { country, age, gender, weight, height } = patientForm.patientInfo;
+    if (basicInfoContext?.patientInfo) {
+      const { country, age, gender, weight, height } =
+        basicInfoContext.patientInfo;
       setCountry(country || "");
-      setAge(age || 0);
+      setAge(age || "");
       setGender(gender || "Masculino");
       setWeight(weight || "");
       setHeight(height || "");
     }
-  }, [patientForm]);
+  }, [basicInfoContext?.patientInfo]);
 
-  useEffect(() => {
-    if (patientForm) {
-      patientForm.patientInfo = {
+  const handleContinuePress = () => {
+    if (!country || !age) {
+      alert("Por favor complete el campo País y Edad");
+      return;
+    }
+    if (basicInfoContext) {
+      basicInfoContext.patientInfo = {
         country,
         age,
         gender,
@@ -35,94 +43,61 @@ export default function BasicInfo() {
         height,
       };
     }
-  }, [country, age, gender, weight, height, patientForm]); // Dependencias para actualizar cuando cambian los valores
+    router.push("/screens/ReasonInfo");
+  };
+
+  const handleBackPress = () => {
+    router.push("/screens/DoctorInfo");
+  };
 
   return (
     <Screen>
-      <ScrollView className="h-full">
-        <Text className="text-2xl font-bold mb-1">Información Paciente</Text>
-        <Text className="text-sm text-gray-400 mb-5">
-          Por favor ingrese sus datos
-        </Text>
-        <Text className="text-lg mb-3">País </Text>
-        <View className="flex-row">
-          <TextInput
-            className="border border-gray-300 text-lg rounded-lg p-2 mb-2 w-full text-gray-500"
-            value={country}
-            onChangeText={setCountry}
-          />
-        </View>
-        <Text className="text-lg mb-3">Edad </Text>
-        <TextInput
-          className="border border-gray-300 text-lg rounded-lg p-2 mb-2 w-full text-gray-500"
+      <ScrollView>
+        <Title
+          text="Información Paciente"
+          subtext="Por favor ingrese sus datos"
+        />
+        <FormTextInput label="País" value={country} onChangeText={setCountry} />
+        <FormTextInput
+          label={"Edad"}
           value={age}
           onChangeText={setAge}
-          keyboardType="numeric"
+          type={"numeric"}
         />
         <Text className="text-lg mb-3">Sexo </Text>
-        <View style={{ flexDirection: "row" }} className="mb-4">
-          <Pressable
+        <View className="flex-row mb-8">
+          <RadioButton
+            isSelected={gender === "Masculino"}
             onPress={() => setGender("Masculino")}
-            className="flex-row items-center mb-4"
-          >
-            <Text
-              className={`h-7 w-7 float-left border rounded-full ${gender === "Masculino" ? "bg-black text-white" : "bg-white text-black"}`}
-            ></Text>
-            <Text
-              className={`pl-2 text-lg ${gender === "Masculino" ? "text-black" : "text-gray-400"}`}
-            >
-              Masculino
-            </Text>
-          </Pressable>
-          <Pressable
+            label="Masculino"
+          />
+          <RadioButton
+            isSelected={gender === "Femenino"}
             onPress={() => setGender("Femenino")}
-            className="flex-row items-center mb-4 ml-4"
-          >
-            <Text
-              className={`h-7 w-7 float-left border rounded-full ${gender === "Femenino" ? "bg-black text-white" : "bg-white text-black"}`}
-            ></Text>
-            <Text
-              className={`pl-2 text-lg ${gender === "Femenino" ? "text-black" : "text-gray-400"}`}
-            >
-              Femenino
-            </Text>
-          </Pressable>
+            label="Femenino"
+          />
         </View>
-        <Text className="text-lg mb-3">
-          Peso (kg)<Text className="text-sm text-gray-400">(Opcional)</Text>
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-lg p-2 mb-4 w-full pl-4"
+        <FormTextInput
+          label="Peso (kg)"
           value={weight}
-          placeholder="Ej: 74"
+          placeholder={"Ej: 74"}
           onChangeText={setWeight}
-          keyboardType="numeric"
+          type={"numeric"}
+          isOptional={true}
         />
-        <Text className="text-lg mb-3">
-          Altura (cm) <Text className="text-sm text-gray-400">(Opcional)</Text>
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-lg p-2 w-full pl-4"
+        <FormTextInput
+          label="Altura (cm)"
           value={height}
-          placeholder="Ej: 177"
+          placeholder={"Ej: 177"}
+          type={"numeric"}
           onChangeText={setHeight}
-          keyboardType="numeric"
+          isOptional={true}
         />
       </ScrollView>
-      <View className="w-64 ml-auto mt-2">
-        <Pressable
-          className="justify-center items-center bg-black h-12 rounded-lg "
-          onPress={() => {
-            if (country === "" || age === "") {
-              alert("Por favor complete el campo País y Edad");
-              return;
-            }
-            router.push("/screens/ReasonInfo");
-          }}
-        >
-          <Text className="text-white text-lg font-semibold">Continuar</Text>
-        </Pressable>
-      </View>
+      <NavigationButtons
+        onBackPress={handleBackPress}
+        onContinuePress={handleContinuePress}
+      />
     </Screen>
   );
 }

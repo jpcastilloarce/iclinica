@@ -1,18 +1,22 @@
+import React from "react";
 import { Pressable, Text } from "react-native";
-import { useRouter } from "expo-router";
-import { styled } from "nativewind";
 
-const StyledPressable = styled(Pressable);
-
-const Button = ({ children, href }) => {
-  const router = useRouter();
+const Button = ({ label, onPress, isPrimary }) => {
   return (
-    <StyledPressable
-      className="w-56 h-56 bg-black rounded-full justify-center items-center"
-      onPress={() => router.push(href)}
+    <Pressable
+      className={`justify-center items-center h-12 rounded-lg ${
+        isPrimary ? "bg-black" : ""
+      }`}
+      onPress={onPress}
     >
-      <Text className="text-white">{children}</Text>
-    </StyledPressable>
+      <Text
+        className={`text-lg font-semibold ${
+          isPrimary ? "text-white" : "text-black"
+        }`}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 };
 

@@ -1,99 +1,95 @@
-import React, { useState, useContext } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import React, { useState, useContext, useCallback, useEffect } from "react";
+import { ScrollView } from "react-native";
 import { Screen } from "../../components/Screen";
 import { useRouter } from "expo-router";
-import PatientContext from "../../contexts/PatientContext";
+import Checkbox from "../../components/Checkbox";
+import NavigationButtons from "../../components/NavigationButtons";
+import Title from "../../components/Title";
+import RiskContext from "../../contexts/RiskContext";
 
 export default function RiskInfo() {
-  const [cigarro, setCigarro] = useState(false);
-  const [hipertension, setHipertension] = useState(false);
-  const [diabetes, setDiabetes] = useState(false);
-  const [asma, setAsma] = useState(false);
-  const [acv, setAcv] = useState(false);
-  const [ataque, setAtaque] = useState(false);
+  const riskContext = useContext(RiskContext);
+  const [cigarro, setCigarro] = useState(riskContext.riskFactors.smokes);
+  const [hipertension, setHipertension] = useState(
+    riskContext.riskFactors.hasHypertension,
+  );
+  const [diabetes, setDiabetes] = useState(riskContext.riskFactors.hasDiabetes);
+  const [asma, setAsma] = useState(riskContext.riskFactors.hasAsthma);
+  const [acv, setAcv] = useState(riskContext.riskFactors.hadStroke);
+  const [ataque, setAtaque] = useState(riskContext.riskFactors.hadHeartAttack);
 
   const router = useRouter();
 
-  const formPaciente = useContext(PatientContext);
-  formPaciente.patientForm.riskFactors = {};
-  formPaciente.patientForm.riskFactors.hadHeartAttack = ataque;
-  formPaciente.patientForm.riskFactors.hadStroke = acv;
-  formPaciente.patientForm.riskFactors.hasAsthma = asma;
-  formPaciente.patientForm.riskFactors.hasDiabetes = diabetes;
-  formPaciente.patientForm.riskFactors.hasHypertension = hipertension;
-  formPaciente.patientForm.riskFactors.smokes = cigarro;
+  useEffect(() => {
+    if (riskContext) {
+      setCigarro(riskContext.riskFactors.smokes);
+      setHipertension(riskContext.riskFactors.hasHypertension);
+      setDiabetes(riskContext.riskFactors.hasDiabetes);
+      setAsma(riskContext.riskFactors.hasAsthma);
+      setAcv(riskContext.riskFactors.hadStroke);
+      setAtaque(riskContext.riskFactors.hadHeartAttack);
+    }
+  }, [riskContext]);
+
+  const handleContinuePress = useCallback(() => {
+    if (riskContext) {
+      riskContext.riskFactors = {};
+      riskContext.riskFactors.hadHeartAttack = ataque;
+      riskContext.riskFactors.hadStroke = acv;
+      riskContext.riskFactors.hasAsthma = asma;
+      riskContext.riskFactors.hasDiabetes = diabetes;
+      riskContext.riskFactors.hasHypertension = hipertension;
+      riskContext.riskFactors.smokes = cigarro;
+    }
+    router.push("/screens/SymptomsInfo");
+  }, [acv, asma, ataque, cigarro, diabetes, hipertension, riskContext, router]);
+
+  const handleBackPress = () => {
+    router.push("/screens/ReasonInfo");
+  };
+
   return (
     <Screen>
-      <ScrollView className="h-full">
-        <Text className="text-2xl font-bold mb-1">Factores de Riesgo</Text>
-        <Text className="text-sm text-gray-400 mb-5">
-          Por favor seleccione los factores de riesgo que padece
-        </Text>
-        <Pressable
+      <ScrollView>
+        <Title
+          text="Factores de Riesgo"
+          subtext="Por favor seleccione los factores de riesgo que padece"
+        />
+        <Checkbox
+          checked={cigarro}
           onPress={() => setCigarro(!cigarro)}
-          className="flex-row items-center mb-4 mt-10"
-        >
-          <Text className="text-lg mb-3 w-5/6">Fumo Cigarro</Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${cigarro ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
-        <Pressable
+          label="Fumo Cigarro"
+        />
+        <Checkbox
+          checked={hipertension}
           onPress={() => setHipertension(!hipertension)}
-          className="flex-row items-center mb-4 mt-5"
-        >
-          <Text className="text-lg mb-3 w-5/6">Tengo Hipertensión</Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${hipertension ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
-        <Pressable
+          label="Tengo Hipertensión"
+        />
+        <Checkbox
+          checked={diabetes}
           onPress={() => setDiabetes(!diabetes)}
-          className="flex-row items-center mb-4 mt-5"
-        >
-          <Text className="text-lg mb-3 w-5/6">Tengo Diabetes </Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${diabetes ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
-        <Pressable
+          label="Tengo Diabetes"
+        />
+        <Checkbox
+          checked={asma}
           onPress={() => setAsma(!asma)}
-          className="flex-row items-center mb-4 mt-5"
-        >
-          <Text className="text-lg mb-3 w-5/6">Tengo Asma </Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${asma ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
-        <Pressable
+          label="Tengo Asma"
+        />
+        <Checkbox
+          checked={acv}
           onPress={() => setAcv(!acv)}
-          className="flex-row items-center mb-4 mt-5"
-        >
-          <Text className="text-lg mb-3 w-5/6">
-            Tuve Accidente Cerebrovascular ACV
-          </Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${acv ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
-        <Pressable
+          label="Tuve Accidente Cerebrovascular ACV"
+        />
+        <Checkbox
+          checked={ataque}
           onPress={() => setAtaque(!ataque)}
-          className="flex-row items-center mb-4 mt-5"
-        >
-          <Text className="text-lg mb-3 w-5/6">Tuve Ataque al corazón </Text>
-          <Text
-            className={`h-5 w-5 -mt-2 ml-2 border border-gray-500 ${ataque ? "bg-black text-white" : "bg-white text-black"}`}
-          ></Text>
-        </Pressable>
+          label="Tuve Ataque al corazón"
+        />
       </ScrollView>
-      <View className="w-64 ml-auto mt-2">
-        <Pressable
-          className="justify-center items-center bg-black h-12 rounded-lg "
-          onPress={() => router.push("/screens/SymptomsInfo")}
-        >
-          <Text className="text-white text-lg font-semibold">Continuar</Text>
-        </Pressable>
-      </View>
+      <NavigationButtons
+        onBackPress={handleBackPress}
+        onContinuePress={handleContinuePress}
+      />
     </Screen>
   );
 }

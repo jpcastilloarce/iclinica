@@ -1,13 +1,12 @@
 import { ScrollView, Text } from "react-native";
 import { Screen } from "../../components/Screen";
+import Title from "../../components/Title";
 
 export default function About() {
   return (
     <Screen>
       <ScrollView>
-        <Text className="text-black font-bold mb-8 text-2xl">
-          Sobre el proyecto
-        </Text>
+        <Title text="Sobre el proyecto" subtext="iclinicA" />
         <Text className="text-black text-black/90 mb-4">
           Esta aplicación ha sido desarrollada con el objetivo de participar en
           la Hackathon 2024 de Midudev, por lo que su uso se limita a fines
