@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useCallback } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Switch } from "react-native";
 import { Screen } from "../../components/Screen";
 import { useRouter } from "expo-router";
 import NavigationButtons from "../../components/NavigationButtons";
@@ -9,15 +9,23 @@ import SymptomCard from "../../components/SymptomCard";
 import FormTextInput from "../../components/FormTextInput";
 import FormSliderInput from "../../components/FormSliderInput";
 import SynptomsContext from "../../contexts/SymptomsContext";
+import Body from "jpc-react-native-body-highlighter";
+import bodyPartTranslations from "../../lib/bodyPartTranslations";
+import BasicInfoContext from "../../contexts/BasicInfoContext";
 
 export default function SymptomsInfo() {
   const symptomContext = useContext(SynptomsContext);
+  const basicInfoContext = useContext(BasicInfoContext);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
   const [intensity, setIntensity] = useState(1);
   const [showNavButtons, setShowNavButtons] = useState(true);
   const [localSymptoms, setLocalSymptoms] = useState([]);
+  const [isBackSideEnabled, setIsBackSideEnabled] = useState(false);
+  const [bodyPartSelected, setBodyPartSelected] = useState({});
+  const toggleSwitch = () =>
+    setIsBackSideEnabled((previousState) => !previousState);
 
   const router = useRouter();
   useEffect(() => {
@@ -43,6 +51,15 @@ export default function SymptomsInfo() {
     symptomContext.symptoms = updatedSymptoms;
     setShowNavButtons(true);
   };
+
+  const handleAddNewSymptomPress = () => {
+    setShowNavButtons(false);
+    setBodyPartSelected({});
+    setLocation("");
+    setDuration("");
+    setIntensity(1);
+  };
+
   const handleContinuePress = useCallback(() => {
     if (localSymptoms.length === 0) {
       alert("Por favor ingrese al menos un síntoma");
@@ -70,7 +87,7 @@ export default function SymptomsInfo() {
             <View className="flex-row">
               <View className="w-4/12">
                 <Button
-                  onPress={() => setShowNavButtons(false)}
+                  onPress={handleAddNewSymptomPress}
                   label="+ Agregar"
                   isPrimary
                 />
@@ -99,18 +116,45 @@ export default function SymptomsInfo() {
         )}
 
         {!showNavButtons && (
-          <ScrollView className="-mt-3.5">
+          <ScrollView className="-mt-14">
             <View className="bg-gray-50 border border-gray-300 p-4">
+              <View className="w-1/4 absolute right-8 scale-150 mt-4 z-10">
+                <Switch
+                  onValueChange={toggleSwitch}
+                  value={isBackSideEnabled}
+                  thumbColor="#000"
+                />
+              </View>
+              <Text className="text-base font-bold -mr-8 absolute mt-16 right-12">
+                ({isBackSideEnabled ? "Frontal" : "De espalda"})
+              </Text>
+              <View className="-mt-10 -mb-10">
+                <Body
+                  data={[bodyPartSelected]}
+                  gender={
+                    basicInfoContext.patientInfo.gender === "Masculino"
+                      ? "male"
+                      : "female"
+                  }
+                  onBodyPartPress={(e) => {
+                    setLocation(bodyPartTranslations[e.slug]);
+                    setBodyPartSelected({ slug: e.slug, intensity: 2 });
+                  }}
+                  side={isBackSideEnabled ? "back" : "front"}
+                  scale={1.5}
+                />
+              </View>
               <FormTextInput
                 label="Ubicación del dolor o malestar"
                 value={location}
                 placeholder={"¿Dónde duele? (cabeza, estómago, garganta)"}
                 onChangeText={setLocation}
+                readOnly
               />
               <FormTextInput
                 label="Descripción del síntoma"
                 value={description}
-                placeholder={"¿Cómo es el dolor? (agudo, sordo, punzante)"}
+                placeholder={"¿Cómo es el dolor? (agudo, leve, punzante)"}
                 onChangeText={setDescription}
               />
               <FormTextInput

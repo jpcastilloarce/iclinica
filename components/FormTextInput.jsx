@@ -10,6 +10,7 @@ const FormTextInput = ({
   isOptional,
   isMultiline,
   numberOfLines,
+  readOnly,
 }) => {
   return (
     <View>
@@ -20,13 +21,14 @@ const FormTextInput = ({
         )}
       </Text>
       <TextInput
-        className="border border-gray-300 rounded-lg p-2 mb-4 w-full pl-4 text-base"
+        className="border border-gray-300 rounded-lg p-2 mb-4 w-full pl-4 text-base text-black"
         value={value}
         placeholder={placeholder}
         onChangeText={onChangeText}
         keyboardType={type || "default"}
         multiline={isMultiline || false}
         numberOfLines={numberOfLines || 1}
+        readOnly={readOnly || false}
       />
     </View>
   );

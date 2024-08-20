@@ -12,10 +12,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assets": [
-      "./assets/fonts/",
-      "./assets/"
-    ],
     "ios": {
       "supportsTablet": true
     },
